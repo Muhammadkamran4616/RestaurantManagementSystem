@@ -5,8 +5,15 @@ namespace RestaurantManagementSystem.Application.Services;
 
 public class CategoryService : ICategoryService
 {
-    public Task<IEnumerable<Category>> GetAllAsync()
+    private readonly ICategoryRepository _repository;
+
+    public CategoryService(ICategoryRepository repository)
     {
-        throw new NotImplementedException();
+        _repository = repository;
+    }
+
+    public async Task<IEnumerable<Category>> GetAllAsync()
+    {
+        return await _repository.GetAllAsync();
     }
 }
