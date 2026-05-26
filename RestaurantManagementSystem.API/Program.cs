@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using RestaurantManagementSystem.Application.Interfaces;
+using RestaurantManagementSystem.Application.Mappings;
+using RestaurantManagementSystem.Application.Services;
 using RestaurantManagementSystem.Infrastructure.Data;
 using RestaurantManagementSystem.Infrastructure.Repositories;
-using RestaurantManagementSystem.Application.Interfaces;
-using RestaurantManagementSystem.Application.Services;
 using System.Text.Json.Serialization;
+using RestaurantManagementSystem.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,12 @@ builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 

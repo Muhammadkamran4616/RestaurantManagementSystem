@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using RestaurantManagementSystem.Application.Interfaces;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RestaurantManagementSystem.Application.DTOs;
 using RestaurantManagementSystem.Domain.Entities;
+using RestaurantManagementSystem.Infrastructure.Data;
 
 namespace RestaurantManagementSystem.API.Controllers;
 
@@ -8,62 +11,90 @@ namespace RestaurantManagementSystem.API.Controllers;
 [Route("api/[controller]")]
 public class MenuItemsController : ControllerBase
 {
-    private readonly IMenuItemService _service;
+    private readonly ApplicationDbContext _context;
+    private readonly IMapper _mapper;
 
-    public MenuItemsController(IMenuItemService service)
+    public MenuItemsController(
+        ApplicationDbContext context,
+        IMapper mapper)
     {
-        _service = service;
+        _context = context;
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<IEnumerable<MenuItemDto>>> GetMenuItems()
     {
-        return Ok(await _service.GetAllAsync());
+        var menuItems = await _context.MenuItems
+            .Include(m => m.Category)
+            .ToListAsync();
+
+        var result = _mapper.Map<List<MenuItemDto>>(menuItems);
+
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<ActionResult<MenuItemDto>> GetMenuItem(int id)
     {
-        var menuItem = await _service.GetByIdAsync(id);
+        var menuItem = await _context.MenuItems
+            .Include(m => m.Category)
+            .FirstOrDefaultAsync(m => m.Id == id);
 
         if (menuItem == null)
+        {
             return NotFound();
+        }
 
-        return Ok(menuItem);
+        var result = _mapper.Map<MenuItemDto>(menuItem);
+
+        return Ok(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(MenuItem menuItem)
+    public async Task<ActionResult<MenuItem>> CreateMenuItem(MenuItem menuItem)
     {
-        var createdItem = await _service.CreateAsync(menuItem);
+        _context.MenuItems.Add(menuItem);
+
+        await _context.SaveChangesAsync();
 
         return CreatedAtAction(
-            nameof(GetById),
-            new { id = createdItem.Id },
-            createdItem);
+            nameof(GetMenuItem),
+            new { id = menuItem.Id },
+            menuItem);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, MenuItem menuItem)
+    public async Task<IActionResult> UpdateMenuItem(
+        int id,
+        MenuItem menuItem)
     {
         if (id != menuItem.Id)
+        {
             return BadRequest();
+        }
 
-        var updated = await _service.UpdateAsync(menuItem);
+        _context.Entry(menuItem).State =
+            EntityState.Modified;
 
-        if (!updated)
-            return NotFound();
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> DeleteMenuItem(int id)
     {
-        var deleted = await _service.DeleteAsync(id);
+        var menuItem = await _context.MenuItems.FindAsync(id);
 
-        if (!deleted)
+        if (menuItem == null)
+        {
             return NotFound();
+        }
+
+        _context.MenuItems.Remove(menuItem);
+
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }

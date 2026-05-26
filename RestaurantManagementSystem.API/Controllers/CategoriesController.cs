@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RestaurantManagementSystem.Infrastructure.Data;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using RestaurantManagementSystem.Application.DTOs;
+using RestaurantManagementSystem.Application.Interfaces;
 
 namespace RestaurantManagementSystem.API.Controllers;
 
@@ -8,18 +9,24 @@ namespace RestaurantManagementSystem.API.Controllers;
 [Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICategoryService _service;
+    private readonly IMapper _mapper;
 
-    public CategoriesController(ApplicationDbContext context)
+    public CategoriesController(
+        ICategoryService service,
+        IMapper mapper)
     {
-        _context = context;
+        _service = service;
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCategories()
+    public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
     {
-        var categories = await _context.Categories.ToListAsync();
+        var categories = await _service.GetAllAsync();
 
-        return Ok(categories);
+        var result = _mapper.Map<List<CategoryDto>>(categories);
+
+        return Ok(result);
     }
 }
