@@ -31,16 +31,21 @@ public class MenuItemRepository : IMenuItemRepository
     public async Task<MenuItem> CreateAsync(MenuItem menuItem)
     {
         _context.MenuItems.Add(menuItem);
+
         await _context.SaveChangesAsync();
+
         return menuItem;
     }
 
     public async Task<bool> UpdateAsync(MenuItem menuItem)
     {
-        var existingItem = await _context.MenuItems.FindAsync(menuItem.Id);
+        var existingItem = await _context.MenuItems
+            .FindAsync(menuItem.Id);
 
         if (existingItem == null)
+        {
             return false;
+        }
 
         existingItem.Name = menuItem.Name;
         existingItem.Description = menuItem.Description;
@@ -59,7 +64,9 @@ public class MenuItemRepository : IMenuItemRepository
         var menuItem = await _context.MenuItems.FindAsync(id);
 
         if (menuItem == null)
+        {
             return false;
+        }
 
         _context.MenuItems.Remove(menuItem);
 
