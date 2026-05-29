@@ -4,8 +4,8 @@ using RestaurantManagementSystem.Application.Mappings;
 using RestaurantManagementSystem.Application.Services;
 using RestaurantManagementSystem.Infrastructure.Data;
 using RestaurantManagementSystem.Infrastructure.Repositories;
+using RestaurantManagementSystem.Infrastructure.Services;
 using System.Text.Json.Serialization;
-using RestaurantManagementSystem.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +25,10 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddScoped<IMenuItemRepository, MenuItemRepository>();
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
